@@ -16,34 +16,12 @@ Copyright_License {
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 }
 */
-#ifndef XCSOAR_THERMALEXPRESS_DRIVER_HPP
-#define XCSOAR_THERMALEXPRESS_DRIVER_HPP
 
-#include "Device/Driver/ThermalExpress.hpp"
-#include "Device/Driver.hpp"
+#ifndef XCSOAR_DIALOGS_THERMALEXPRESS_HPP
+#define XCSOAR_DIALOGS_THERMALEXPRESS_HPP
 
-class NMEAInputLine;
-class Port;
-struct NMEAInfo;
+class Device;
 
-class ThermalExpressDevice : public AbstractDevice {
-
-private:
-  int volume;
-  Port &port;
-
-  bool ParseTXP(NMEAInputLine &line, NMEAInfo &info);
-  bool ParseCNF(NMEAInputLine &line, NMEAInfo &info);
-
-public:
-  ThermalExpressDevice(Port &_port) : port(_port) { };
-
-  bool ParseNMEA(const char *line, NMEAInfo &info) override;
-
-  int getVolume();
-  void setVolume(int newVolume);
-  void WriteDeviceSettings();
-
-};
+void dlgConfigurationThermalExpressShowModal(Device &device);
 
 #endif

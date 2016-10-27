@@ -25,6 +25,7 @@ Copyright_License {
 #include "DeviceEditWidget.hpp"
 #include "Vega/VegaDialogs.hpp"
 #include "BlueFly/BlueFlyDialogs.hpp"
+#include "ThermalExpress/ThermalExpressConfigDialog.hpp"
 #include "ManageCAI302Dialog.hpp"
 #include "ManageFlarmDialog.hpp"
 #include "LX/ManageV7Dialog.hpp"
@@ -612,6 +613,8 @@ DeviceListWidget::ManageCurrent()
     dlgConfigurationVarioShowModal(*device);
   else if (descriptor.IsDriver(_T("BlueFly")))
     dlgConfigurationBlueFlyVarioShowModal(*device);
+  else if (descriptor.IsDriver(_T("ThermalExpress")))
+    dlgConfigurationThermalExpressShowModal(*device);
 
   MessageOperationEnvironment env;
   descriptor.EnableNMEA(env);

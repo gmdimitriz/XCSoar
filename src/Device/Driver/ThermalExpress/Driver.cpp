@@ -21,6 +21,8 @@ Copyright_License {
 #include "Device/Driver/ThermalExpress/Driver.hpp"
 #include "NMEA/InputLine.hpp"
 #include "NMEA/Info.hpp"
+#include "Device/Port/Port.hpp"
+#include "Operation/Operation.hpp"
 
 bool
 ThermalExpressDevice::ParseTXP(NMEAInputLine &line, NMEAInfo &info)
@@ -40,6 +42,28 @@ ThermalExpressDevice::ParseTXP(NMEAInputLine &line, NMEAInfo &info)
 }
 
 bool
+ThermalExpressDevice::ParseCNF(NMEAInputLine &line, NMEAInfo &info)
+{
+  // $CNF,volume,battery,charging
+  int newVolume;
+
+  bool vol_available = line.ReadChecked(newVolume);
+  if (vol_available && (newVolume >= 0 && newVolume <= 2))
+    this->volume=newVolume;
+
+  int newBattery;
+  bool bat_available = line.ReadChecked(newBattery);
+
+  if (bat_available && (newBattery >= 0 && newBattery <= 10))
+  {
+    info.battery_level = newBattery * 10.;
+    info.battery_level_available.Update(info.clock);
+  }
+
+  return true;
+}
+
+bool
 ThermalExpressDevice::ParseNMEA(const char *line, NMEAInfo &info)
 {
   NMEAInputLine input_line(line);
@@ -49,19 +73,44 @@ ThermalExpressDevice::ParseNMEA(const char *line, NMEAInfo &info)
 
   if (StringIsEqual(buffer,"$TXP"))
     return ParseTXP(input_line, info);
+  else if (StringIsEqual(buffer,"$CNF"))
+    return ParseCNF(input_line, info);
   else
     return false;
+}
+
+int
+ThermalExpressDevice::getVolume()
+{
+  return this->volume;
+}
+
+void
+ThermalExpressDevice::setVolume(int newVolume)
+{
+  this->volume=newVolume;
+  WriteDeviceSettings();
+}
+
+void
+ThermalExpressDevice::WriteDeviceSettings()
+{
+  NullOperationEnvironment env;
+  char buffer[5];
+
+  sprintf(buffer,"V%d\n", this->volume);
+  port.FullWrite(buffer, strlen(buffer), env, 10000);
 }
 
 static Device *
 ThermalExpressCreateOnPort(const DeviceConfig &config, Port &com_port)
 {
-  return new ThermalExpressDevice();
+  return new ThermalExpressDevice(com_port);
 }
 
 const struct DeviceRegister thermalexpress_driver = {
   _T("ThermalExpress"),
   _T("Thermal Express"),
-  0,
+  DeviceRegister::MANAGE,
   ThermalExpressCreateOnPort,
 };
